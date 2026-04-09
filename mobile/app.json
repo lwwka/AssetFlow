@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "AssetFlow",
+    "slug": "assetflow-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F6F8FB"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.assetflow.mobile"
+    },
+    "ios": {
+      "bundleIdentifier": "com.assetflow.mobile"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
