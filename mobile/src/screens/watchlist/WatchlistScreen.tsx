@@ -1,11 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../../assets/theme";
-
-const watchlist = [
-  { symbol: "NVDA", price: "$892.50", move: "+2.4%" },
-  { symbol: "MSFT", price: "$421.80", move: "+1.1%" },
-  { symbol: "ETH", price: "$3,185.20", move: "-0.8%" }
-];
+import { watchlistItems } from "../../data/mockPortfolio";
 
 export function WatchlistScreen() {
   return (
@@ -13,11 +8,11 @@ export function WatchlistScreen() {
       <Text style={styles.title}>Watchlist</Text>
       <Text style={styles.subtitle}>Assets you are monitoring closely.</Text>
 
-      {watchlist.map((item) => (
+      {watchlistItems.map((item) => (
         <View key={item.symbol} style={styles.card}>
           <View>
             <Text style={styles.symbol}>{item.symbol}</Text>
-            <Text style={styles.label}>Live Price</Text>
+            <Text style={styles.label}>{item.note}</Text>
           </View>
           <View style={styles.right}>
             <Text style={styles.value}>{item.price}</Text>

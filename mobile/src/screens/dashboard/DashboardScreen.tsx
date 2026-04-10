@@ -1,5 +1,10 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../../assets/theme";
+import {
+  allocationSnapshot,
+  portfolioSummary,
+  topHoldings
+} from "../../data/mockPortfolio";
 
 export function DashboardScreen() {
   return (
@@ -12,36 +17,32 @@ export function DashboardScreen() {
 
       <View style={styles.heroCard}>
         <Text style={styles.cardLabel}>Total Portfolio Value</Text>
-        <Text style={styles.cardValue}>$12,480.25</Text>
-        <Text style={styles.cardGain}>+$652.18 this month</Text>
+        <Text style={styles.cardValue}>{portfolioSummary.totalValue}</Text>
+        <Text style={styles.cardGain}>{portfolioSummary.monthlyChange}</Text>
       </View>
 
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Unrealized P&L</Text>
-          <Text style={styles.statValue}>+$1,284.20</Text>
+          <Text style={styles.statValue}>{portfolioSummary.unrealizedPnl}</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Holdings</Text>
-          <Text style={styles.statValue}>8 Assets</Text>
+          <Text style={styles.statValue}>{portfolioSummary.holdingsCount}</Text>
         </View>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Top Holdings</Text>
-        {[
-          ["AAPL", "Apple Inc.", "$4,820", "+6.2%"],
-          ["VOO", "Vanguard S&P 500", "$3,410", "+4.8%"],
-          ["BTC", "Bitcoin", "$2,125", "+11.4%"]
-        ].map(([symbol, name, value, pnl]) => (
-          <View key={symbol} style={styles.rowCard}>
+        {topHoldings.slice(0, 3).map((holding) => (
+          <View key={holding.symbol} style={styles.rowCard}>
             <View>
-              <Text style={styles.rowSymbol}>{symbol}</Text>
-              <Text style={styles.rowName}>{name}</Text>
+              <Text style={styles.rowSymbol}>{holding.symbol}</Text>
+              <Text style={styles.rowName}>{holding.name}</Text>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.rowValue}>{value}</Text>
-              <Text style={styles.rowGain}>{pnl}</Text>
+              <Text style={styles.rowValue}>{holding.value}</Text>
+              <Text style={styles.rowGain}>{holding.pnl}</Text>
             </View>
           </View>
         ))}
@@ -50,10 +51,11 @@ export function DashboardScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Allocation Snapshot</Text>
         <View style={styles.allocationCard}>
-          <Text style={styles.allocationLine}>US Stocks 48%</Text>
-          <Text style={styles.allocationLine}>ETF 31%</Text>
-          <Text style={styles.allocationLine}>Crypto 17%</Text>
-          <Text style={styles.allocationLine}>Cash 4%</Text>
+          {allocationSnapshot.map((line) => (
+            <Text key={line} style={styles.allocationLine}>
+              {line}
+            </Text>
+          ))}
         </View>
       </View>
     </ScrollView>

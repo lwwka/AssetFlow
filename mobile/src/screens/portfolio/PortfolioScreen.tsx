@@ -1,11 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../../assets/theme";
-
-const holdings = [
-  { symbol: "AAPL", value: "$4,820", pnl: "+6.2%" },
-  { symbol: "VOO", value: "$3,410", pnl: "+4.8%" },
-  { symbol: "BTC", value: "$2,125", pnl: "+11.4%" }
-];
+import { topHoldings } from "../../data/mockPortfolio";
 
 export function PortfolioScreen() {
   return (
@@ -13,11 +8,13 @@ export function PortfolioScreen() {
       <Text style={styles.title}>Portfolio</Text>
       <Text style={styles.subtitle}>Your current holdings and performance.</Text>
 
-      {holdings.map((holding) => (
+      {topHoldings.map((holding) => (
         <View key={holding.symbol} style={styles.card}>
           <View>
             <Text style={styles.symbol}>{holding.symbol}</Text>
-            <Text style={styles.label}>Market Value</Text>
+            <Text style={styles.label}>
+              {holding.quantity} • {holding.averageCost}
+            </Text>
           </View>
           <View style={styles.right}>
             <Text style={styles.value}>{holding.value}</Text>
