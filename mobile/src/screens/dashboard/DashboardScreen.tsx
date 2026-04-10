@@ -1,19 +1,49 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../../assets/theme";
-import {
-  allocationSnapshot,
-  portfolioSummary,
-  topHoldings
-} from "../../data/mockPortfolio";
+import { usePortfolioData } from "../../hooks/usePortfolioData";
 
 export function DashboardScreen() {
+  const {
+    allocationSnapshot,
+    dataMode,
+    error,
+    isLoading,
+    portfolioSummary,
+    recentTransactions,
+    reload,
+    topHoldings,
+    watchlistItems
+  } = usePortfolioData();
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.badge}>AssetFlow</Text>
+      <View style={styles.badgeRow}>
+        <Text style={styles.badge}>AssetFlow</Text>
+        <Text style={styles.demoBadge}>
+          {dataMode === "live" ? "Live Mode" : "Offline Demo"}
+        </Text>
+      </View>
       <Text style={styles.title}>Portfolio Dashboard</Text>
       <Text style={styles.subtitle}>
         A clean snapshot of your capital, monthly momentum, and top positions.
       </Text>
+
+      <View style={styles.statusRow}>
+        <Text style={styles.statusText}>
+          {isLoading ? "Loading portfolio data..." : "Portfolio data ready"}
+        </Text>
+        <Pressable
+          style={[styles.reloadButton, isLoading && styles.reloadButtonDisabled]}
+          onPress={reload}
+          disabled={isLoading}
+        >
+          <Text style={styles.reloadButtonText}>
+            {isLoading ? "Refreshing..." : "Reload"}
+          </Text>
+        </Pressable>
+      </View>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.heroCard}>
         <Text style={styles.cardLabel}>Total Portfolio Value</Text>
@@ -58,6 +88,44 @@ export function DashboardScreen() {
           ))}
         </View>
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Recent Activity</Text>
+        {recentTransactions.map((transaction) => (
+          <View key={transaction.id} style={styles.activityCard}>
+            <View>
+              <Text style={styles.activityTitle}>
+                {transaction.type} {transaction.symbol}
+              </Text>
+              <Text style={styles.activityDate}>{transaction.date}</Text>
+            </View>
+            <Text style={styles.activityAmount}>{transaction.amount}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Watchlist Preview</Text>
+        {watchlistItems.slice(0, 2).map((item) => (
+          <View key={item.symbol} style={styles.previewCard}>
+            <View>
+              <Text style={styles.previewSymbol}>{item.symbol}</Text>
+              <Text style={styles.previewNote}>{item.note}</Text>
+            </View>
+            <View style={styles.rowRight}>
+              <Text style={styles.rowValue}>{item.price}</Text>
+              <Text
+                style={[
+                  styles.previewMove,
+                  item.move.startsWith("-") ? styles.previewLoss : styles.previewGain
+                ]}
+              >
+                {item.move}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </View>
     </ScrollView>
   );
 }
@@ -70,6 +138,12 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     paddingBottom: spacing.xl
+  },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm
   },
   badge: {
     alignSelf: "flex-start",
@@ -84,6 +158,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: "uppercase"
   },
+  demoBadge: {
+    marginBottom: spacing.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "#FEF3C7",
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "700"
+  },
   title: {
     fontSize: 28,
     fontWeight: "700",
@@ -95,6 +179,39 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: colors.mutedText
+  },
+  statusRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+    gap: spacing.md
+  },
+  statusText: {
+    color: colors.mutedText,
+    fontSize: 13
+  },
+  reloadButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  reloadButtonDisabled: {
+    opacity: 0.7
+  },
+  reloadButtonText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: "700"
+  },
+  errorText: {
+    marginBottom: spacing.md,
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: "600"
   },
   heroCard: {
     padding: spacing.lg,
@@ -146,7 +263,7 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   section: {
-    marginTop: spacing.lg,
+    marginTop: spacing.lg
   },
   sectionTitle: {
     marginBottom: spacing.md,
@@ -201,5 +318,64 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     lineHeight: 20
+  },
+  activityCard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  activityTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "700"
+  },
+  activityDate: {
+    marginTop: spacing.xs,
+    color: colors.mutedText,
+    fontSize: 13
+  },
+  activityAmount: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "700"
+  },
+  previewCard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  previewSymbol: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "700"
+  },
+  previewNote: {
+    marginTop: spacing.xs,
+    color: colors.mutedText,
+    fontSize: 13,
+    maxWidth: 220
+  },
+  previewMove: {
+    marginTop: spacing.xs,
+    fontSize: 13,
+    fontWeight: "700"
+  },
+  previewGain: {
+    color: colors.success
+  },
+  previewLoss: {
+    color: colors.danger
   }
 });

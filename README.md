@@ -33,6 +33,12 @@ npm install
 npx expo start
 ```
 
+For the fastest local UI development workflow, run the mobile app on web:
+
+```bash
+npx expo start --web
+```
+
 The mobile app now expects the Spring Boot backend to be running on port `8080`.
 
 - iOS simulator uses `http://localhost:8080`
@@ -51,7 +57,9 @@ The current mobile app uses a hybrid approach:
 
 - auth prefers the Spring Boot backend when available
 - auth falls back to offline demo mode if the backend is not running
-- dashboard, portfolio, and watchlist currently use shared mock portfolio data
+- dashboard, portfolio, watchlist, and profile currently use a shared service layer backed by mock portfolio data
+- screen components now read portfolio data through a shared `usePortfolioData` hook
+- the hook already exposes `isLoading`, `error`, and `reload` so screens can keep the same contract when live APIs are added
 
 Recommended migration order from mock data to real APIs:
 
@@ -61,6 +69,13 @@ Recommended migration order from mock data to real APIs:
 4. Move holdings into `/api/holdings`
 5. Move transactions into `/api/transactions`
 6. Move watchlist and quote data into market data services
+
+The portfolio service currently supports a simple data mode switch:
+
+- `mock`: current default for local UI development
+- `live`: reserved for future Spring Boot API integration
+
+When `live` mode is enabled, the hook first tries `GET /api/portfolios/user/{userId}` and falls back to mock data if the backend is unavailable.
 
 ## Product Roadmap
 

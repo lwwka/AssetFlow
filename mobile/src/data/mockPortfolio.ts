@@ -12,6 +12,15 @@ export type WatchlistItem = {
   price: string;
   move: string;
   note: string;
+  signal: string;
+};
+
+export type TransactionItem = {
+  id: string;
+  type: "BUY" | "SELL" | "DIVIDEND";
+  symbol: string;
+  amount: string;
+  date: string;
 };
 
 export const portfolioSummary = {
@@ -68,18 +77,70 @@ export const watchlistItems: WatchlistItem[] = [
     symbol: "NVDA",
     price: "$892.50",
     move: "+2.4%",
-    note: "AI momentum remains strong"
+    note: "AI momentum remains strong",
+    signal: "Breakout watch"
   },
   {
     symbol: "MSFT",
     price: "$421.80",
     move: "+1.1%",
-    note: "Cloud growth still resilient"
+    note: "Cloud growth still resilient",
+    signal: "Quality compounder"
   },
   {
     symbol: "ETH",
     price: "$3,185.20",
     move: "-0.8%",
-    note: "Watching support around recent range"
+    note: "Watching support around recent range",
+    signal: "Volatility elevated"
   }
+];
+
+export const marketPulse = [
+  { label: "Nasdaq", value: "+1.3%" },
+  { label: "S&P 500", value: "+0.7%" },
+  { label: "BTC", value: "+2.1%" }
+];
+
+export const watchlistInsights = [
+  "2 assets are trading above your recent watch range",
+  "1 asset is showing near-term weakness worth tracking",
+  "Tech remains the strongest theme in this sample portfolio"
+];
+
+export const recentTransactions: TransactionItem[] = [
+  {
+    id: "txn-1",
+    type: "BUY",
+    symbol: "NVDA",
+    amount: "$1,240.00",
+    date: "Today"
+  },
+  {
+    id: "txn-2",
+    type: "DIVIDEND",
+    symbol: "VOO",
+    amount: "$42.60",
+    date: "Yesterday"
+  },
+  {
+    id: "txn-3",
+    type: "SELL",
+    symbol: "TSLA",
+    amount: "$980.00",
+    date: "Apr 8"
+  }
+];
+
+export const profilePreferences = [
+  "Base currency: USD",
+  "Default portfolio: Global Growth",
+  "Price alerts: Enabled",
+  "Weekly summary: Monday 8:00 AM"
+];
+
+export const profileStatusItems = [
+  { label: "Mode", value: "Offline Demo" },
+  { label: "Backend", value: "Disconnected" },
+  { label: "Data source", value: "Shared mock data" }
 ];
