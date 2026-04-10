@@ -11,10 +11,48 @@ Spring Boot backend skeleton for AssetFlow.
 
 ## Run
 
-Create a PostgreSQL database named `assetflow`, then run:
+Open PowerShell in `backend/`.
 
-```bash
+If you want to start the Java server with your PostgreSQL setup:
+
+```powershell
 mvn spring-boot:run
+```
+
+If you want the easiest local startup without PostgreSQL, use the in-memory `dev` profile:
+
+```powershell
+mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+The backend will start on:
+
+```text
+http://localhost:8080
+```
+
+If port `8080` is already in use on Windows, check it with:
+
+```powershell
+netstat -ano | findstr :8080
+```
+
+Then inspect the process:
+
+```powershell
+Get-Process -Id <PID>
+```
+
+If it is safe to stop it:
+
+```powershell
+Stop-Process -Id <PID>
+```
+
+If you prefer to run the backend on another port instead, use:
+
+```powershell
+mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
 ## Initial APIs

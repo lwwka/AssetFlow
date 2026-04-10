@@ -41,6 +41,19 @@ npx expo start --web
 
 The mobile app now expects the Spring Boot backend to be running on port `8080`.
 
+Start the backend from [backend/README.md](C:\codex-sandbox\AssetFlow\backend\README.md) with:
+
+```powershell
+cd backend
+mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+If port `8080` is already occupied, either stop the existing process or run the backend on another port:
+
+```powershell
+mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
+```
+
 - iOS simulator uses `http://localhost:8080`
 - Android emulator uses `http://10.0.2.2:8080`
 - Physical device testing requires changing the API base URL in [authApi.ts](/Users/lawrence/Desktop/codex-workspace/AssetFlow/mobile/src/api/authApi.ts) to your machine's LAN IP
