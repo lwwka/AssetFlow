@@ -16,6 +16,39 @@ export type ProfileStatusItem = {
   label: string;
   value: string;
 };
+export type UserPortfolio = {
+  id: number;
+  name: string;
+  baseCurrency: string;
+  userId: number;
+};
+export type LivePortfolioSummary = {
+  portfolioId: number;
+  portfolioName: string;
+  baseCurrency: string;
+  totalCostBasis: number;
+  holdingsCount: number;
+  marketDataAvailable: boolean;
+};
+export type LiveHolding = {
+  id: number;
+  symbol: string;
+  assetType: string;
+  quantity: number;
+  averageCost: number;
+  currency: string;
+  costBasis: number;
+};
+export type LiveTransaction = {
+  id: number;
+  type: string;
+  symbol: string;
+  quantity: number;
+  price: number;
+  amount: number;
+  currency: string;
+  tradeDate: string;
+};
 export type PortfolioDataBundle = {
   dataMode: DataMode;
   portfolioSummary: typeof portfolioSummary;
@@ -28,13 +61,6 @@ export type PortfolioDataBundle = {
   profilePreferences: typeof profilePreferences;
   profileStatusItems: ProfileStatusItem[];
 };
-type PortfolioApiResponse = {
-  id: number;
-  name: string;
-  baseCurrency: string;
-  userId: number;
-};
-
 const DATA_MODE: DataMode = "mock";
 const API_BASE_URL =
   Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
@@ -130,6 +156,54 @@ export function getProfileStatusItems() {
   return buildMockPortfolioDataBundle().profileStatusItems;
 }
 
+export async function fetchUserPortfolios(userId: number): Promise<UserPortfolio[]> {
+  const response = await fetch(`${API_BASE_URL}/api/portfolios/user/${userId}`);
+
+  if (!response.ok) {
+    throw new Error(`Portfolio API returned status ${response.status}.`);
+  }
+
+  return (await response.json()) as UserPortfolio[];
+}
+
+export async function fetchPortfolioSummary(
+  portfolioId: number
+): Promise<LivePortfolioSummary> {
+  const response = await fetch(`${API_BASE_URL}/api/portfolios/${portfolioId}/summary`);
+
+  if (!response.ok) {
+    throw new Error(`Portfolio summary API returned status ${response.status}.`);
+  }
+
+  return (await response.json()) as LivePortfolioSummary;
+}
+
+export async function fetchPortfolioHoldings(
+  portfolioId: number
+): Promise<LiveHolding[]> {
+  const response = await fetch(`${API_BASE_URL}/api/portfolios/${portfolioId}/holdings`);
+
+  if (!response.ok) {
+    throw new Error(`Portfolio holdings API returned status ${response.status}.`);
+  }
+
+  return (await response.json()) as LiveHolding[];
+}
+
+export async function fetchPortfolioTransactions(
+  portfolioId: number
+): Promise<LiveTransaction[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/portfolios/${portfolioId}/transactions`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Portfolio transactions API returned status ${response.status}.`);
+  }
+
+  return (await response.json()) as LiveTransaction[];
+}
+
 export async function loadPortfolioData(userId = 1): Promise<{
   data: PortfolioDataBundle;
   error: string | null;
@@ -144,13 +218,7 @@ export async function loadPortfolioData(userId = 1): Promise<{
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/portfolios/user/${userId}`);
-
-    if (!response.ok) {
-      throw new Error(`Portfolio API returned status ${response.status}.`);
-    }
-
-    const portfolios = (await response.json()) as PortfolioApiResponse[];
+    const portfolios = await fetchUserPortfolios(userId);
     const firstPortfolio = portfolios[0];
     const livePreferences = [...profilePreferences];
 

@@ -1,218 +1,240 @@
 # AssetFlow
 
-AssetFlow is a mobile-first investment portfolio tracker built with React Native and Spring Boot.
+**中文**
 
-## Current Scope
+AssetFlow 是一個以手機為核心的投資組合追蹤產品，目標是幫助使用者清楚掌握持倉、投資組合表現、自選清單與盈虧變化。
 
-- React Native app scaffold with Expo
-- Login and register flow with local mock auth
-- Dashboard, portfolio, watchlist, and profile screens
-- Project structure prepared for Spring Boot backend
+**English**
 
-## Project Structure
+AssetFlow is a mobile-first investment portfolio tracking product designed to help users clearly understand their holdings, portfolio performance, watchlists, and profit-and-loss changes.
+
+## Product Overview / 產品概覽
+
+**中文**
+
+AssetFlow 的核心價值不是交易，而是投資資產管理與追蹤。現階段重點在於建立清楚、易用、可持續查看的投資總覽體驗。
+
+**English**
+
+AssetFlow is not primarily a trading product. Its core value is investment asset management and tracking, with an emphasis on delivering a clear, simple, and repeatable portfolio overview experience.
+
+## Tech Stack / 技術架構
+
+- Mobile app: React Native + Expo
+- Mobile language: TypeScript
+- Backend: Spring Boot
+- Backend language: Java 17
+- ORM: Spring Data JPA with Hibernate
+- Database: PostgreSQL
+- Local development database: H2 in-memory
+- Database migration: Flyway
+- Backend build tool: Maven
+- Mobile package manager: npm
+
+## Project Structure / 專案結構
 
 ```text
 AssetFlow/
-  mobile/
-  backend/
+  mobile/    React Native + Expo app
+  backend/   Spring Boot API service
+  docs/      Product and engineering notes
 ```
 
-## Mobile
+## Current Status / 目前狀態
 
-The mobile app currently includes:
+**中文**
 
-- auth screens
-- local tab-based app flow
-- portfolio dashboard UI
-- backend auth API integration for login and register
+目前專案已具備：
 
-Run the mobile app from `mobile/`:
+- Login / Register 畫面
+- Dashboard / Portfolio / Watchlist / Profile 畫面
+- 基本 auth API
+- Profile 已可透過 `/api/auth/me` 讀取目前使用者資料
+- Portfolio 已可透過 `/api/portfolios/user/{userId}` 讀取真實 portfolio 清單
+- Dashboard 已可透過 `/api/portfolios/{portfolioId}/summary` 讀取真實 summary
+- Portfolio 已可透過 `/api/portfolios/{portfolioId}/holdings` 讀取真實 holdings
+- Dashboard / Portfolio 已可透過 `/api/portfolios/{portfolioId}/transactions` 讀取真實 transactions
+- Portfolio 建立與依使用者查詢 API
+- PostgreSQL 與 H2 開發模式
+
+目前的主要缺口：
+
+- Dashboard 與 Portfolio 仍以 mock data 為主
+- 前端尚未完全接上真實登入後的資料流程
+- holdings / transactions / summary 尚未形成完整真實資料閉環
+- auth 機制仍偏本地開發用途
+
+**English**
+
+The project already includes:
+
+- Login and Register screens
+- Dashboard, Portfolio, Watchlist, and Profile screens
+- Basic authentication APIs
+- Profile can now load the current user through `/api/auth/me`
+- Portfolio can now load live portfolio records through `/api/portfolios/user/{userId}`
+- Dashboard can now load a live summary through `/api/portfolios/{portfolioId}/summary`
+- Portfolio can now load live holdings through `/api/portfolios/{portfolioId}/holdings`
+- Dashboard / Portfolio can now load live transactions through `/api/portfolios/{portfolioId}/transactions`
+- Portfolio creation and user portfolio lookup APIs
+- PostgreSQL and H2 development modes
+
+The current main gaps are:
+
+- Dashboard and Portfolio still rely mostly on mock data
+- The frontend is not yet fully connected to authenticated live user flows
+- holdings / transactions / summary are not yet part of a complete live data loop
+- the auth approach is still development-oriented
+
+## Local Setup / 本地啟動
+
+### Mobile
 
 ```bash
+cd mobile
 npm install
 npx expo start
 ```
 
-For the fastest local UI development workflow, run the mobile app on web:
+Fastest local UI workflow:
 
 ```bash
 npx expo start --web
 ```
 
-The mobile app now expects the Spring Boot backend to be running on port `8080`.
+### Backend
 
-Start the backend from [backend/README.md](C:\codex-sandbox\AssetFlow\backend\README.md) with:
+Use the easiest local mode without PostgreSQL:
 
 ```powershell
 cd backend
 mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
 
-If port `8080` is already occupied, either stop the existing process or run the backend on another port:
+Use the default PostgreSQL-backed mode:
+
+```powershell
+cd backend
+mvn spring-boot:run
+```
+
+Default backend URL:
+
+```text
+http://localhost:8080
+```
+
+If `8080` is busy:
 
 ```powershell
 mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
-- iOS simulator uses `http://localhost:8080`
-- Android emulator uses `http://10.0.2.2:8080`
-- Physical device testing requires changing the API base URL in [authApi.ts](/Users/lawrence/Desktop/codex-workspace/AssetFlow/mobile/src/api/authApi.ts) to your machine's LAN IP
+## Mobile and Backend Integration / 行動端與後端整合
 
-## Next Steps
+**中文**
 
-- build Spring Boot auth APIs
-- connect mobile auth to backend
-- add holdings, transactions, and market data services
+目前 mobile app 預期 backend 運行在 `8080`：
 
-## Frontend Data Strategy
+- iOS simulator: `http://localhost:8080`
+- Android emulator: `http://10.0.2.2:8080`
+- 實機測試：需改為開發機 LAN IP
 
-The current mobile app uses a hybrid approach:
+目前採混合資料策略：
 
-- auth prefers the Spring Boot backend when available
-- auth falls back to offline demo mode if the backend is not running
-- dashboard, portfolio, watchlist, and profile currently use a shared service layer backed by mock portfolio data
-- screen components now read portfolio data through a shared `usePortfolioData` hook
-- the hook already exposes `isLoading`, `error`, and `reload` so screens can keep the same contract when live APIs are added
+- auth 優先走 backend API
+- backend 不可用時，auth 可退回 offline demo flow
+- dashboard / portfolio / watchlist / profile 仍以共享 mock data 為主
 
-Recommended migration order from mock data to real APIs:
+**English**
 
-1. Keep UI development fast with shared mock data during MVP iteration
-2. Replace auth fallback with real token-based authentication
-3. Move portfolio summary into `/api/portfolios`
-4. Move holdings into `/api/holdings`
-5. Move transactions into `/api/transactions`
-6. Move watchlist and quote data into market data services
+The mobile app currently expects the backend to run on port `8080`:
 
-The portfolio service currently supports a simple data mode switch:
+- iOS simulator: `http://localhost:8080`
+- Android emulator: `http://10.0.2.2:8080`
+- Physical device testing: use your machine's LAN IP
 
-- `mock`: current default for local UI development
-- `live`: reserved for future Spring Boot API integration
+The current data strategy is hybrid:
 
-When `live` mode is enabled, the hook first tries `GET /api/portfolios/user/{userId}` and falls back to mock data if the backend is unavailable.
+- auth prefers the backend API
+- auth can fall back to an offline demo flow when the backend is unavailable
+- dashboard / portfolio / watchlist / profile still rely mainly on shared mock data
 
-## Product Roadmap
+## API Snapshot / 目前 API
 
-### Product Vision
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `POST /api/portfolios`
+- `GET /api/portfolios/user/{userId}`
+- `GET /api/portfolios/{portfolioId}/summary`
+- `GET /api/portfolios/{portfolioId}/holdings`
+- `GET /api/portfolios/{portfolioId}/transactions`
 
-AssetFlow helps everyday investors track their portfolios in one mobile-first app, understand performance clearly, and make more confident decisions without the complexity of institutional tools.
+## MVP Focus / MVP 重點
 
-### Target Users
+**中文**
 
-- Retail investors managing stocks, ETFs, and cash positions
-- Busy professionals who want quick portfolio visibility on mobile
-- Users who currently track investments in spreadsheets or broker apps
+現階段最重要的不是增加更多功能，而是完成第一條真實資料閉環：
 
-### Success Metrics
+1. 使用者註冊或登入
+2. 取得目前使用者資訊
+3. 建立或讀取 portfolio
+4. 顯示 holdings 與 portfolio summary
+5. 讓 dashboard 顯示真實資料而非 mock data
 
-- Weekly active users
-- 7-day and 30-day retention
-- Portfolio creation completion rate
-- Daily check-in frequency
-- Watchlist engagement
-- Data sync success rate
+**English**
+
+The highest priority right now is not adding more features, but completing the first real live-data loop:
+
+1. User signs up or logs in
+2. The app retrieves the current user
+3. The app creates or loads the user's portfolio
+4. The app displays holdings and portfolio summary
+5. The dashboard shows real data instead of mock data
+
+## Roadmap / 路線圖
 
 ### Phase 1: Foundation MVP
 
-Goal: ship a usable first version that supports account access, portfolio setup, and a basic daily tracking experience.
-
-Key initiatives:
-
-- User authentication with Spring Boot backend
-- Replace mock auth with real login and register APIs
-- Portfolio creation and manual holdings entry
-- Holdings list with position value, cost basis, and gain/loss
-- Dashboard summary for total portfolio value and daily change
-- Basic watchlist for saving symbols users want to monitor
-- Secure token handling and session persistence
-
-Expected outcome:
-
-Users can sign up, log in, add their investments manually, and monitor a simple portfolio from mobile.
+- stable login / register
+- persistent user flow
+- portfolio creation
+- holdings list
+- basic dashboard summary
 
 ### Phase 2: Core Tracking Experience
 
-Goal: make AssetFlow useful as a daily portfolio companion instead of only a static record-keeping app.
-
-Key initiatives:
-
-- Transaction history for buys, sells, dividends, and cash movements
-- Portfolio performance views across day, week, month, and all-time
-- Asset allocation breakdown by asset type, sector, or geography
-- Watchlist price movement and simple market overview
-- Better dashboard insights such as top gainers, top losers, and concentration risk
-- Edit and delete flows for holdings and transactions
-- Improved error states, loading states, and empty states across the app
-
-Expected outcome:
-
-Users can understand what changed in their portfolio, why it changed, and where their exposure sits.
+- transactions
+- watchlist persistence
+- richer analytics
+- better loading / error / empty states
 
 ### Phase 3: Automation and Data Integrations
 
-Goal: reduce manual input and increase the trustworthiness of portfolio data.
-
-Key initiatives:
-
-- Market data integration for real-time or delayed pricing
-- Historical price storage for performance charts
-- Broker import via CSV as the first lightweight ingestion path
-- Dividend and corporate action handling
-- FX support for multi-currency portfolios
-- Background sync jobs in Spring Boot
-- Portfolio reconciliation checks and data quality alerts
-
-Expected outcome:
-
-Users spend less time maintaining data manually and get a more accurate, continuously updated portfolio view.
+- market data integration
+- historical performance
+- background sync
+- multi-currency support
 
 ### Phase 4: Intelligence and Personalization
 
-Goal: evolve from tracking to decision support.
+- alerts
+- insights
+- personalization
+- premium reporting
 
-Key initiatives:
+## Near-Term Priorities / 近期優先順序
 
-- Personalized portfolio insights and alerts
-- Price alerts and watchlist event notifications
-- Goal tracking for wealth targets or income targets
-- Risk indicators such as sector concentration and single-asset exposure
-- Smart summaries of portfolio changes over time
-- Custom dashboard cards and personalization settings
+1. Complete the backend auth flow for real mobile integration
+2. Connect Profile to `GET /api/auth/me`
+3. Add holdings and portfolio summary APIs
+4. Move dashboard and portfolio screens to real data sources
+5. Reduce mock data to a development fallback only
 
-Expected outcome:
+## Related Docs / 相關文件
 
-AssetFlow becomes a habit-forming product that helps users notice important signals and stay engaged.
-
-### Phase 5: Premium and Ecosystem Expansion
-
-Goal: create differentiation and long-term product value.
-
-Key initiatives:
-
-- Premium analytics and advanced reporting
-- Tax lot tracking and realized/unrealized gain reports
-- Shared or advisor view for family portfolios
-- Web companion dashboard for deeper analysis
-- Benchmark comparison against indices and custom portfolios
-- Exportable reports and monthly summaries
-
-Expected outcome:
-
-AssetFlow expands from a simple tracker into a broader investment operating system for serious retail users.
-
-### Suggested Delivery Timeline
-
-- Q1: Phase 1 Foundation MVP
-- Q2: Phase 2 Core Tracking Experience
-- Q3: Phase 3 Automation and Data Integrations
-- Q4: Phase 4 Intelligence and Personalization
-- Later: Phase 5 Premium and Ecosystem Expansion
-
-### Near-Term Build Priorities
-
-If the team is small, the highest-priority sequence should be:
-
-1. Backend auth and real mobile authentication
-2. Manual holdings and transaction model
-3. Dashboard metrics and portfolio summary APIs
-4. Watchlist backed by persistent storage
-5. Market data integration
+- [backend/README.md](/C:/codex-sandbox/AssetFlow/backend/README.md)
+- [docs/Home.md](/C:/codex-sandbox/AssetFlow/docs/Home.md)
+- [docs/Product Strategy TW.md](/C:/codex-sandbox/AssetFlow/docs/Product%20Strategy%20TW.md)
+- [docs/Product Overview ZH-EN.md](/C:/codex-sandbox/AssetFlow/docs/Product%20Overview%20ZH-EN.md)

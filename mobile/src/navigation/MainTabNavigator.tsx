@@ -45,17 +45,15 @@ export function MainTabNavigator({ onLogout }: MainTabNavigatorProps) {
         )
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Portfolio" component={PortfolioScreen} />
+      <Tab.Screen name="Dashboard">
+        {() => <DashboardScreen authSession={null} />}
+      </Tab.Screen>
+      <Tab.Screen name="Portfolio">
+        {() => <PortfolioScreen authSession={null} />}
+      </Tab.Screen>
       <Tab.Screen name="Watchlist" component={WatchlistScreen} />
       <Tab.Screen name="Profile">
-        {() => (
-          <ProfileScreen
-            userName="Lawrence"
-            userEmail="lawrence@example.com"
-            onLogout={onLogout}
-          />
-        )}
+        {() => <ProfileScreen authSession={null} onLogout={onLogout} />}
       </Tab.Screen>
     </Tab.Navigator>
   );

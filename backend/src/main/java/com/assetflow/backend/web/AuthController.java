@@ -2,10 +2,13 @@ package com.assetflow.backend.web;
 
 import com.assetflow.backend.service.AuthService;
 import com.assetflow.backend.web.dto.AuthResponse;
+import com.assetflow.backend.web.dto.CurrentUserResponse;
 import com.assetflow.backend.web.dto.LoginRequest;
 import com.assetflow.backend.web.dto.RegisterRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +34,10 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @GetMapping("/me")
+    public CurrentUserResponse me(@RequestHeader("Authorization") String authorizationHeader) {
+        return authService.getCurrentUser(authorizationHeader);
     }
 }

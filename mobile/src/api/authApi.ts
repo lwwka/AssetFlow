@@ -1,5 +1,11 @@
 import { Platform } from "react-native";
-import type { AuthUser, LoginPayload, RegisterPayload } from "../types/auth";
+import type {
+  AuthSession,
+  AuthSource,
+  AuthUser,
+  LoginPayload,
+  RegisterPayload
+} from "../types/auth";
 
 type AuthApiResponse = {
   userId: number;
@@ -42,10 +48,36 @@ function toAuthUser(response: AuthApiResponse): AuthUser {
   };
 }
 
+function toAuthSession(response: AuthApiResponse, source: AuthSource): AuthSession {
+  return {
+    user: toAuthUser(response),
+    token: response.token,
+    source
+  };
+}
+
+export async function fetchCurrentUser(token: string): Promise<AuthUser> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  const data = (await response.json()) as Omit<AuthApiResponse, "token">;
+  return toAuthUser({
+    ...data,
+    token
+  });
+}
+
 export async function loginWithEmail({
   email,
   password
-}: LoginPayload): Promise<AuthUser> {
+}: LoginPayload): Promise<AuthSession> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
@@ -63,7 +95,7 @@ export async function loginWithEmail({
     }
 
     const data = (await response.json()) as AuthApiResponse;
-    return toAuthUser(data);
+    return toAuthSession(data, "live");
   } catch (error) {
     if (ENABLE_OFFLINE_FALLBACK && isNetworkError(error)) {
       if (!email.toLowerCase().includes("@")) {
@@ -75,9 +107,13 @@ export async function loginWithEmail({
       }
 
       return {
-        id: 1,
-        name: "Demo User",
-        email
+        user: {
+          id: 1,
+          name: "Demo User",
+          email
+        },
+        token: null,
+        source: "offline"
       };
     }
 
@@ -89,7 +125,7 @@ export async function registerWithEmail({
   name,
   email,
   password
-}: RegisterPayload): Promise<AuthUser> {
+}: RegisterPayload): Promise<AuthSession> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
@@ -108,7 +144,7 @@ export async function registerWithEmail({
     }
 
     const data = (await response.json()) as AuthApiResponse;
-    return toAuthUser(data);
+    return toAuthSession(data, "live");
   } catch (error) {
     if (ENABLE_OFFLINE_FALLBACK && isNetworkError(error)) {
       if (name.trim().length < 2) {
@@ -124,9 +160,13 @@ export async function registerWithEmail({
       }
 
       return {
-        id: 2,
-        name: name.trim(),
-        email
+        user: {
+          id: 2,
+          name: name.trim(),
+          email
+        },
+        token: null,
+        source: "offline"
       };
     }
 

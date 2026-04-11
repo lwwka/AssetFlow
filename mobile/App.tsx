@@ -9,7 +9,7 @@ import { ProfileScreen } from "./src/screens/profile/ProfileScreen";
 import { RegisterScreen } from "./src/screens/auth/RegisterScreen";
 import { WatchlistScreen } from "./src/screens/watchlist/WatchlistScreen";
 import { useState } from "react";
-import type { AuthUser } from "./src/types/auth";
+import type { AuthSession } from "./src/types/auth";
 
 type AuthMode = "login" | "register";
 type TabKey = "dashboard" | "portfolio" | "watchlist" | "profile";
@@ -18,7 +18,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
@@ -42,11 +42,11 @@ export default function App() {
 
     try {
       setIsSubmitting(true);
-      const user = await loginWithEmail({
+      const session = await loginWithEmail({
         email: loginEmail.trim(),
         password: loginPassword
       });
-      setCurrentUser(user);
+      setAuthSession(session);
       setIsAuthenticated(true);
       setActiveTab("dashboard");
     } catch (error) {
@@ -66,12 +66,12 @@ export default function App() {
 
     try {
       setIsSubmitting(true);
-      const user = await registerWithEmail({
+      const session = await registerWithEmail({
         name: registerName,
         email: registerEmail.trim(),
         password: registerPassword
       });
-      setCurrentUser(user);
+      setAuthSession(session);
       setIsAuthenticated(true);
       setActiveTab("dashboard");
     } catch (error) {
@@ -85,7 +85,7 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    setCurrentUser(null);
+    setAuthSession(null);
     setAuthError("");
     setLoginPassword("");
     setRegisterPassword("");
@@ -124,20 +124,19 @@ export default function App() {
 
     switch (activeTab) {
       case "portfolio":
-        return <PortfolioScreen />;
+        return <PortfolioScreen authSession={authSession} />;
       case "watchlist":
         return <WatchlistScreen />;
       case "profile":
         return (
           <ProfileScreen
-            userName={currentUser?.name ?? "Investor"}
-            userEmail={currentUser?.email ?? "investor@example.com"}
+            authSession={authSession}
             onLogout={handleLogout}
           />
         );
       case "dashboard":
       default:
-        return <DashboardScreen />;
+        return <DashboardScreen authSession={authSession} />;
     }
   };
 

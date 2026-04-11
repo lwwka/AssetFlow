@@ -1,19 +1,73 @@
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../../assets/theme";
+import { fetchCurrentUser } from "../../api/authApi";
 import { usePortfolioData } from "../../hooks/usePortfolioData";
+import type { AuthSession, AuthUser } from "../../types/auth";
 
 type ProfileScreenProps = {
-  userName: string;
-  userEmail: string;
+  authSession: AuthSession | null;
   onLogout: () => void;
 };
 
-export function ProfileScreen({
-  userName,
-  userEmail,
-  onLogout
-}: ProfileScreenProps) {
+export function ProfileScreen({ authSession, onLogout }: ProfileScreenProps) {
   const { profilePreferences, profileStatusItems } = usePortfolioData();
+  const [profileUser, setProfileUser] = useState<AuthUser | null>(authSession?.user ?? null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
+
+  useEffect(() => {
+    setProfileUser(authSession?.user ?? null);
+    setProfileError(null);
+
+    const token = authSession?.token;
+
+    if (!token) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadCurrentUser = async () => {
+      try {
+        setIsRefreshingProfile(true);
+        const user = await fetchCurrentUser(token);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setProfileUser(user);
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setProfileError(
+          error instanceof Error
+            ? error.message
+            : "Unable to refresh your profile from the backend."
+        );
+      } finally {
+        if (isMounted) {
+          setIsRefreshingProfile(false);
+        }
+      }
+    };
+
+    void loadCurrentUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authSession]);
+
+  const displayUser = profileUser ?? {
+    id: 0,
+    name: "Investor",
+    email: "investor@example.com"
+  };
+  const isLiveProfile = Boolean(authSession?.token);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -23,9 +77,34 @@ export function ProfileScreen({
       </View>
 
       <View style={styles.heroCard}>
-        <Text style={styles.name}>{userName}</Text>
-        <Text style={styles.email}>{userEmail}</Text>
-        <Text style={styles.memberTag}>Investor account</Text>
+        <Text style={styles.name}>{displayUser.name}</Text>
+        <Text style={styles.email}>{displayUser.email}</Text>
+        <Text style={styles.memberTag}>
+          {isLiveProfile ? "Live account" : "Offline demo account"}
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Account Source</Text>
+        <View style={styles.card}>
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Profile data</Text>
+            <Text style={styles.statusValue}>
+              {isRefreshingProfile
+                ? "Refreshing"
+                : isLiveProfile
+                  ? "Backend /api/auth/me"
+                  : "Local session fallback"}
+            </Text>
+          </View>
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Authentication mode</Text>
+            <Text style={styles.statusValue}>
+              {authSession?.source === "live" ? "Live backend" : "Offline demo"}
+            </Text>
+          </View>
+          {profileError ? <Text style={styles.errorText}>{profileError}</Text> : null}
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -54,9 +133,9 @@ export function ProfileScreen({
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Next Backend Steps</Text>
         <View style={styles.card}>
-          <Text style={styles.meta}>1. Start Spring Boot auth APIs</Text>
-          <Text style={styles.meta}>2. Connect portfolios and holdings endpoints</Text>
-          <Text style={styles.meta}>3. Replace demo mode with token-based login</Text>
+          <Text style={styles.meta}>1. Connect portfolio summary to live APIs</Text>
+          <Text style={styles.meta}>2. Add holdings and transactions endpoints</Text>
+          <Text style={styles.meta}>3. Replace in-memory auth with production auth</Text>
         </View>
       </View>
 
@@ -151,6 +230,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     color: colors.text,
     fontSize: 14
+  },
+  errorText: {
+    marginTop: spacing.sm,
+    color: colors.danger,
+    fontSize: 13,
+    lineHeight: 18
   },
   button: {
     marginTop: spacing.lg,

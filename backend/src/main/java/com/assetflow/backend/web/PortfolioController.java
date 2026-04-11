@@ -2,7 +2,10 @@ package com.assetflow.backend.web;
 
 import com.assetflow.backend.service.PortfolioService;
 import com.assetflow.backend.web.dto.CreatePortfolioRequest;
+import com.assetflow.backend.web.dto.HoldingResponse;
 import com.assetflow.backend.web.dto.PortfolioResponse;
+import com.assetflow.backend.web.dto.PortfolioSummaryResponse;
+import com.assetflow.backend.web.dto.TransactionResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -33,5 +36,20 @@ public class PortfolioController {
     @GetMapping("/user/{userId}")
     public List<PortfolioResponse> getByUser(@PathVariable Long userId) {
         return portfolioService.findByUser(userId);
+    }
+
+    @GetMapping("/{portfolioId}/summary")
+    public PortfolioSummaryResponse getSummary(@PathVariable Long portfolioId) {
+        return portfolioService.getSummary(portfolioId);
+    }
+
+    @GetMapping("/{portfolioId}/holdings")
+    public List<HoldingResponse> getHoldings(@PathVariable Long portfolioId) {
+        return portfolioService.findHoldingsByPortfolio(portfolioId);
+    }
+
+    @GetMapping("/{portfolioId}/transactions")
+    public List<TransactionResponse> getTransactions(@PathVariable Long portfolioId) {
+        return portfolioService.findTransactionsByPortfolio(portfolioId);
     }
 }

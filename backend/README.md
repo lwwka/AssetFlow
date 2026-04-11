@@ -5,9 +5,12 @@ Spring Boot backend skeleton for AssetFlow.
 ## Stack
 
 - Spring Boot
-- Spring Data JPA
+- Java 17
+- Spring Data JPA with Hibernate
 - PostgreSQL
+- H2 in-memory for local development
 - Flyway
+- Maven
 
 ## Run
 
@@ -59,6 +62,7 @@ mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `GET /api/auth/me`
 - `POST /api/portfolios`
 - `GET /api/portfolios/user/{userId}`
 
@@ -66,4 +70,5 @@ mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
 
 - Maven Wrapper is not added yet, so this skeleton currently assumes `mvn` is available locally.
 - Password handling is placeholder-only right now and must be replaced with real hashing plus JWT/session auth before production use.
+- `GET /api/auth/me` currently uses an in-memory token store from the login/register response. This is useful for local development but should be replaced with proper stateless auth before production use.
 - Kafka, Kubernetes, market data ingestion, and holdings/transactions endpoints can be added on top of this base.
